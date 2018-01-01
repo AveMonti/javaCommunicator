@@ -8,6 +8,7 @@ package server;
 import client.Client;
 import common.Message;
 import common.User;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
@@ -40,8 +41,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
-
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -230,7 +234,14 @@ public class Server implements Runnable {
                             out.println("/err " + Database.ERRMSG);
                         }
                         
-                    case "/listFriends":
+                    case "/listFriends": //tutaj
+                        
+                        
+                        
+                        
+                        List<User> Users = new ArrayList<User>();
+
+
                         String patternFriends = "%";
                         if(st.hasMoreTokens()) {
                             patternFriends = st.nextToken();
@@ -241,10 +252,14 @@ public class Server implements Runnable {
                             for(Integer id: ids) {
                                 User u = db.getUser(id);
                                 out.println(id + ": " +u);
+                                Users.add(u);
                             }
                         } catch (SQLException ex) {
                             out.println("/err " + Database.ERRMSG);
                         }
+                        
+                        displayTableView(Users);
+                        
                 
                         break;
                     case "/register":
@@ -391,5 +406,24 @@ public class Server implements Runnable {
                 nRegisteredUsersLabel.setText("n/a");
             }
         }
-    } 
+    }
+    
+    private static void displayTableView(List<User> u) {
+    
+    System.out.print(u);
+        
+    JFrame frame = new JFrame();
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+    Object rowData[][] = { { "Row1-Column1", "Row1-Column2", "Row1-Column3" },
+        { "Row2-Column1", "Row2-Column2", "Row2-Column3" } };
+    Object columnNames[] = { "Column One", "Column Two", "Column Three" };
+    JTable table = new JTable(rowData, columnNames);
+
+    JScrollPane scrollPane = new JScrollPane(table);
+    frame.add(scrollPane, BorderLayout.CENTER);
+    frame.setSize(300, 150);
+    frame.setVisible(true);
+        
+    }
 }
