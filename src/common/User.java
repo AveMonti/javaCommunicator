@@ -16,20 +16,25 @@ public class User {
     private final String firstName;
     private final String lastName;
     private final String passwordHash;
+    private final Boolean isLogin;
     
-    public User(String firstName, String lastName, String passwordHash) {
+    
+    public User(String firstName, String lastName, String passwordHash, Boolean isLogin) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.passwordHash = passwordHash;
+        this.isLogin = isLogin;
     }
-    public User(String firstName, String lastName, String password, String algName) {
+    public User(String firstName, String lastName, String password, String algName,Boolean isLogin) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.passwordHash = makeHash(password, algName);
+        this.isLogin = isLogin;
     }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
-    public String getPasswordHash() { return passwordHash; }
+    public String getPasswordHash() { return passwordHash;}
+    public Boolean getIsLogin() { return isLogin;}
     
     public static String makeHash(String plain, String algName) {
         try {

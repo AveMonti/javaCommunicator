@@ -39,6 +39,7 @@ public final class Database {
                 "firstName VARCHAR(64) NOT NULL," +
                 "lastName VARCHAR(64) NOT NULL," +
                 "passwordHash VARCHAR(64) NOT NULL," +
+                "isLogin BOOLEAN NOT NULL SET DEFAULT FALSE," +
                 "CONSTRAINT user_primary_key PRIMARY KEY (id)" +
                 ")");
             try {
@@ -49,6 +50,7 @@ public final class Database {
                 "id2 INTEGER NOT NULL," +
                 "CONSTRAINT friend_primary_key PRIMARY KEY (id1, id2)" +
                 ")");            
+            
               addUser(new User("Admin", "Istrator", adminPassword, "MD5"));
 //            Set<Integer> ids = getUserIds("%");
 //            for(Integer id: ids) {
@@ -70,7 +72,7 @@ public final class Database {
     }
     
     public int addUser(User u) throws SQLException {
-        PreparedStatement st = dbConn.prepareStatement("INSERT INTO \"user\" (firstName, lastName, passwordHash) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement st = dbConn.prepareStatement("INSERT INTO \"user\" (firstName, lastName, passwordHash,isLogin) VALUES (?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
         st.setString(1, u.getFirstName());
         st.setString(2, u.getLastName());
         st.setString(3, u.getPasswordHash());
@@ -82,11 +84,11 @@ public final class Database {
     
     public User getUser(int id) throws SQLException {
         if(id == 0) return null;
-        PreparedStatement st = dbConn.prepareStatement("SELECT firstName, lastName, passwordHash FROM \"user\" WHERE id=?");
+        PreparedStatement st = dbConn.prepareStatement("SELECT firstName, lastName, passwordHash, isLogin FROM \"user\" WHERE id=?");
         st.setInt(1, id);
         ResultSet rs = st.executeQuery();
         rs.next();
-        return new User(rs.getString(1), rs.getString(2), rs.getString(3));
+        return new User(rs.getString(1), rs.getString(2), rs.getString(3), rs.getBoolean(4));
     }
     
     public Set<Integer> getUserIds(String pattern) throws SQLException {

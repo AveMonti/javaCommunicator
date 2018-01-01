@@ -61,6 +61,8 @@ public class Server implements Runnable {
     private static JLabel nThreadsLabel;
     private static JLabel nRegisteredUsersLabel;
     private static Database db;
+    
+    
 
     public static void main(String[] args) throws IOException, SQLException {
         
@@ -117,6 +119,28 @@ public class Server implements Runnable {
 	mainWindow.setLocation((dim.width - abounds.width) / 2, (dim.height - abounds.height) / 2);
         mainWindow.add(interior);
         mainWindow.setVisible(true);
+        
+ 
+        
+        
+        
+    JFrame frame = new JFrame();
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    Object rowData[][] = { { "Row1-Column1", "Row1-Column2", "Row1-Column3" },
+        { "Row2-Column1", "Row2-Column2", "Row2-Column3" } };
+    Object columnNames[] = { "Column One", "Column Two", "Column Three" };
+    JTable table = new JTable(rowData, columnNames);
+
+    JScrollPane scrollPane = new JScrollPane(table);
+    frame.add(scrollPane, BorderLayout.CENTER);
+    frame.setSize(300, 150);
+    frame.setVisible(true);
+        
+        
+        
+        
+        
+        
         
         for(;;) {
             Socket sock = ssock.accept();
@@ -410,8 +434,10 @@ public class Server implements Runnable {
     
     private static void displayTableView(List<User> u) {
     
-    System.out.print(u);
-        
+//    System.out.print(u);
+    
+    
+
     JFrame frame = new JFrame();
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
