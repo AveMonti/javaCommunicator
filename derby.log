@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Mon Jan 01 14:37:15 CET 2018:
+ Uruchamianie wersji The Apache Software Foundation - Apache Derby - 10.14.1.0 - (1808820) systemu Derby: instancja a816c00e-0160-b1f0-c64b-0000035ed850
+w katalogu bazy danych /Users/mateuszchojnacki/Desktop/Communicator-2/db sun.misc.Launcher$AppClassLoader@7ea987ac 
+
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_151-b12
+user.dir=/Users/mateuszchojnacki/Desktop/Communicator-2
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.13.2
+derby.system.home=null
+Uruchomiono program ładujący klasę bazy danych - derby.database.classpath=''
