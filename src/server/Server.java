@@ -105,12 +105,6 @@ public class Server implements Runnable {
         interior.add(new JLabel("Registered users", JLabel.LEFT));
         nRegisteredUsersLabel = new JLabel("", JLabel.RIGHT);
         interior.add(nRegisteredUsersLabel);
-        //
-        interior.add(nThreadsLabel);
-        interior.add(new JLabel("Registered users", JLabel.LEFT));
-        nRegisteredUsersLabel = new JLabel("", JLabel.RIGHT);
-        interior.add(nRegisteredUsersLabel);
-        //
         refreshView(true);
         Dimension dim = mainWindow.getToolkit().getScreenSize();
 	Rectangle abounds = mainWindow.getBounds();
