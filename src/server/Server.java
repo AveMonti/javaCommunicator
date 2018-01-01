@@ -42,6 +42,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+
 /**
  *
  * @author Mariusz
@@ -92,6 +93,7 @@ public class Server implements Runnable {
         }
 
         if(ssock == null) return;
+        
         
         JFrame mainWindow = new JFrame("Communicator server on port " + port);
         mainWindow.setSize(300, 120);
