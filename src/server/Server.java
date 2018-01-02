@@ -230,7 +230,7 @@ public class Server implements Runnable {
                             out.println("/err " + Database.ERRMSG);
                         }
                         
-                    case "/getFriends":
+                    case "/addFriends":
                         if(login > 0) {
                                 int first = Integer.parseInt(st.nextToken());
                                 int secound = Integer.parseInt(st.nextToken());
