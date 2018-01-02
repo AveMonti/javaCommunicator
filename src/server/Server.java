@@ -36,6 +36,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -228,22 +230,21 @@ public class Server implements Runnable {
                             out.println("/err " + Database.ERRMSG);
                         }
                         
-                    case "/listFriends":
-                        String patternFriends = "%";
-                        if(st.hasMoreTokens()) {
-                            patternFriends = st.nextToken();
-                        }
-
-                        try {
-                            Set<Integer> ids = db.getUserIds(patternFriends);
-                            for(Integer id: ids) {
-                                User u = db.getUser(id);
-                                out.println(id + ": " +u);
+                    case "/getFriends":
+                        if(login > 0) {
+                                int first = Integer.parseInt(st.nextToken());
+                                int secound = Integer.parseInt(st.nextToken());
+                            try {
+                                 db.addFriendship(first, secound);
+                                  out.println("Correct addition to friends :)");
+                            } catch (SQLException ex) {
+                                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (IllegalArgumentException ex) {
+                           Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                        } catch (SQLException ex) {
-                            out.println("/err " + Database.ERRMSG);
+                        } else {
+                            out.println("/err You are not logged in");
                         }
-                
                         break;
                     case "/register":
                         try {
