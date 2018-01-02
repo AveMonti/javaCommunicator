@@ -230,7 +230,7 @@ public class Server implements Runnable {
                             out.println("/err " + Database.ERRMSG);
                         }
                         
-                    case "/getFriends":
+                    case "/addFriends":
                         if(login > 0) {
                                 int first = Integer.parseInt(st.nextToken());
                                 int secound = Integer.parseInt(st.nextToken());
@@ -246,6 +246,42 @@ public class Server implements Runnable {
                             out.println("/err You are not logged in");
                         }
                         break;
+                    case "/deleteFriendship":
+                        if(login > 0) {
+                                int first = Integer.parseInt(st.nextToken());
+                                int secound = Integer.parseInt(st.nextToken());
+                            try {
+                                if(db.isFriend(first, secound)){
+                                    db.deleteFriendship(first, secound);
+                                    out.println("It's over your Friendship");
+                                }else{
+                                    out.println("You and this dude are not friends, and u cant delete him.");
+                                }
+                            } catch (SQLException ex) {
+                                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (IllegalArgumentException ex) {
+                           Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        } else {
+                            out.println("/err You are not logged in");
+                        }
+                        break;
+                    case "/allMyFriend":
+                        if(login > 0) {
+                            int first = Integer.parseInt(st.nextToken());
+                        try {
+                            Set<Integer> friendsID = db.getFriendIds(first);
+                            //out.println(friendsID);
+                            System.out.println(friendsID);
+                        } catch (SQLException ex) {
+                            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                            
+                        }else {
+                            out.println("/err You are not logged in");
+                        }
+                        break;
+                    
                     case "/register":
                         try {
                             int id = db.addUser(new User(st.nextToken(), st.nextToken(), st.nextToken(), "MD5"));
