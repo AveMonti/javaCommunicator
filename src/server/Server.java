@@ -270,8 +270,9 @@ public class Server implements Runnable {
                         if(login > 0) {
                             int first = Integer.parseInt(st.nextToken());
                         try {
+                            seeFriends(first);
                             Set<Integer> friendsID = db.getFriendIds(first);
-                            //out.println(friendsID);
+                            out.println(friendsID);
                             System.out.println(friendsID);
                         } catch (SQLException ex) {
                             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -426,5 +427,22 @@ public class Server implements Runnable {
                 nRegisteredUsersLabel.setText("n/a");
             }
         }
-    } 
+    }
+        private static void seeFriends(int userID){
+        
+        Set<User> friendsList = new HashSet<> ();
+        try {
+            Set<Integer> friendsIdList = db.getFriendIds(userID);
+            for (Integer number : friendsIdList) {
+                System.out.println(number);
+                User newUser = db.getUser(number);
+                friendsList.add(newUser);
+            }
+            
+            System.out.println(friendsList);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }
