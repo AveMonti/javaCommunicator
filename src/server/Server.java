@@ -489,16 +489,17 @@ public class Server implements Runnable {
                         //System.out.println(number);
                         User newUser = db.getUser(number);
                         friendsList.add(newUser);
+                        
                         Vector<String> newRow = new Vector<String>();
                         newRow.addElement(newUser.getFirstName());
                         newRow.addElement(newUser.getLastName());
                         
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("");
-                        sb.append(newUser.getIsLogin());
-                        String strI = sb.toString();
-                        newRow.addElement(strI);
-                        
+                        if(newUser.getIsLogin() == 0){
+                           newRow.addElement("NO"); 
+                        }else if(newUser.getIsLogin() == 1){
+                           newRow.addElement("YES"); 
+                        }
+
                         newVec.add(newRow);
                     }
             
