@@ -8,6 +8,7 @@ package server;
 import client.Client;
 import common.Message;
 import common.User;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
@@ -36,13 +37,20 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+
+
 
 /**
  *
@@ -58,7 +66,15 @@ public class Server implements Runnable {
     private static JLabel nThreadsLabel;
     private static JLabel nRegisteredUsersLabel;
     private static Database db;
-
+    private static int userUID = 0;
+    
+    // Jtable
+    
+    private static Vector<Vector> newVec = new Vector<Vector>();
+    private static Vector<String> columnNames = new Vector<String>();
+    private static JTable table;
+    private static DefaultTableModel dm = new DefaultTableModel(0, 0);
+    
     public static void main(String[] args) throws IOException, SQLException {
         
         ServerSocket ssock = null;
@@ -108,11 +124,37 @@ public class Server implements Runnable {
         nRegisteredUsersLabel = new JLabel("", JLabel.RIGHT);
         interior.add(nRegisteredUsersLabel);
         refreshView(true);
+        refreshTable(userUID,true);
         Dimension dim = mainWindow.getToolkit().getScreenSize();
 	Rectangle abounds = mainWindow.getBounds();
 	mainWindow.setLocation((dim.width - abounds.width) / 2, (dim.height - abounds.height) / 2);
         mainWindow.add(interior);
         mainWindow.setVisible(true);
+
+        
+        
+
+        
+        
+        
+         //
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        columnNames.addElement("Name");
+          columnNames.addElement("Surname");
+         columnNames.addElement("isLog?");
+    
+        dm.setDataVector(newVec, columnNames);
+        table = new JTable();
+        table.setModel(dm);
+        
+        JScrollPane scrollPane = new JScrollPane(table);
+        frame.add(scrollPane, BorderLayout.CENTER);
+        frame.setSize(300, 150);
+        frame.setVisible(true);
+        
+        
+        
         
         for(;;) {
             Socket sock = ssock.accept();
@@ -131,25 +173,32 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
+        
         servers.add(this);
         refreshView(false);
+        refreshTable(login,true);
         try {
 	out = new PrintWriter(sock.getOutputStream(), true);
 	BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         out.println("Use /help for help");
         mainLoop:
         for(;;) {
+            
+
             String s = null;
+            refreshTable(login,true);
             try {
                 s = in.readLine();
             } catch(SocketException e) {
                 break;
             }
             if(s == null) break;
+            refreshTable(login,true);
             /*
                 interpretation of a command/data sent from clients
             */
             if(s.charAt(0) == '/') {
+                refreshTable(login,true);
                 StringTokenizer st = new StringTokenizer(s);
                 String cmd = st.nextToken();
                 switch(cmd) {
@@ -163,7 +212,10 @@ public class Server implements Runnable {
                                     out.println("/err Login failed");
                                 } else {
                                     login = loginCandidate;
+                                    userUID = login;
                                     out.println("Welcome on the board, " + u);
+                                    u.setIsLogin(1);
+                                    db.updateUser(login, u);
                                 }
                             } catch(NumberFormatException ex) {
                                 out.println("/err Non-integer user id used");    
@@ -266,22 +318,16 @@ public class Server implements Runnable {
                             out.println("/err You are not logged in");
                         }
                         break;
-                    case "/allMyFriend":
+                    case "/allMyFriends":
+                        // // // // // // // // // // // // // // // // // // // // // // 
                         if(login > 0) {
-                            int first = Integer.parseInt(st.nextToken());
-                        try {
-                            Set<Integer> friendsID = db.getFriendIds(first);
-                            //out.println(friendsID);
-                            System.out.println(friendsID);
-                        } catch (SQLException ex) {
-                            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                             
+                            refreshTable(login,true);
                         }else {
                             out.println("/err You are not logged in");
                         }
                         break;
-                    
+                        // // // // // // // // // // // // // // // // // // // // // // 
                     case "/register":
                         try {
                             int id = db.addUser(new User(st.nextToken(), st.nextToken(), st.nextToken(), "MD5"));
@@ -307,6 +353,7 @@ public class Server implements Runnable {
                     case "/upload":
                         synchronized(sock) {
                             try {
+                                refreshTable(userUID,true);
                                 int bytesToRead = Integer.parseInt(st.nextToken());
                                 if(bytesToRead < 0 || bytesToRead > UPLOADLIMIT) throw new FileSystemException("File to upload too big");
                                 UUID uuid = UUID.randomUUID();
@@ -341,6 +388,7 @@ public class Server implements Runnable {
                             } else {
                                 String fileName = st.nextToken();
                                 try {
+                                    refreshTable(userUID,true);
                                     File file = new File("files/" + fileName);
                                     long fileSize = file.length();
                                     out.println("/downloadready " + fileSize);
@@ -380,6 +428,7 @@ public class Server implements Runnable {
                 if(login > 0) {
                     if(sendTo > 0) {
                         try {
+                            refreshTable(userUID,true);
                             Message msg = new Message(new Timestamp(System.currentTimeMillis()), null, login, sendTo, s);
                             int msgId = db.saveMessage(msg);
                             int count = 0;
@@ -412,6 +461,7 @@ public class Server implements Runnable {
             sock.close();
         } catch(Exception e) {}
         refreshView(false);
+        refreshTable(userUID,false);
     }
     
     private static void refreshView(boolean withDB) {
@@ -426,5 +476,45 @@ public class Server implements Runnable {
                 nRegisteredUsersLabel.setText("n/a");
             }
         }
-    } 
+    }
+    
+    private static void refreshTable(int login,boolean withDB) {
+
+        if(withDB && db != null && login > 0) {
+            Set<User> friendsList = new HashSet<> ();
+            try {
+                Set<Integer> friendsIdList = db.getFriendIds(login);
+                    newVec.clear();
+                    for (Integer number : friendsIdList) {
+                        //System.out.println(number);
+                        User newUser = db.getUser(number);
+                        friendsList.add(newUser);
+                        
+                        Vector<String> newRow = new Vector<String>();
+                        newRow.addElement(newUser.getFirstName());
+                        newRow.addElement(newUser.getLastName());
+                        
+                        if(newUser.getIsLogin() == 0){
+                           newRow.addElement("NO"); 
+                        }else if(newUser.getIsLogin() == 1){
+                           newRow.addElement("YES"); 
+                        }
+
+                        newVec.add(newRow);
+                    }
+            
+                System.out.println(friendsList);
+                dm.fireTableDataChanged();
+                
+                
+                
+                
+                
+            } catch (SQLException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else {
+            System.out.println("You are not logged in");
+        } 
+    }
 }

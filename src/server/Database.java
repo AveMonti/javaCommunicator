@@ -39,6 +39,7 @@ public final class Database {
                 "firstName VARCHAR(64) NOT NULL," +
                 "lastName VARCHAR(64) NOT NULL," +
                 "passwordHash VARCHAR(64) NOT NULL," +
+                "isLogin INTEGER NOT NULL," +
                 "CONSTRAINT user_primary_key PRIMARY KEY (id)" +
                 ")");
             try {
@@ -70,10 +71,11 @@ public final class Database {
     }
     
     public int addUser(User u) throws SQLException {
-        PreparedStatement st = dbConn.prepareStatement("INSERT INTO \"user\" (firstName, lastName, passwordHash) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement st = dbConn.prepareStatement("INSERT INTO \"user\" (firstName, lastName, passwordHash, isLogin) VALUES (?, ?, ?,?)", Statement.RETURN_GENERATED_KEYS);
         st.setString(1, u.getFirstName());
         st.setString(2, u.getLastName());
         st.setString(3, u.getPasswordHash());
+        st.setInt(4, u.getIsLogin());
         st.executeUpdate();
         ResultSet rs = st.getGeneratedKeys();
         rs.next();
@@ -82,11 +84,11 @@ public final class Database {
     
     public User getUser(int id) throws SQLException {
         if(id == 0) return null;
-        PreparedStatement st = dbConn.prepareStatement("SELECT firstName, lastName, passwordHash FROM \"user\" WHERE id=?");
+        PreparedStatement st = dbConn.prepareStatement("SELECT firstName, lastName, passwordHash, isLogin FROM \"user\" WHERE id=?");
         st.setInt(1, id);
         ResultSet rs = st.executeQuery();
         rs.next();
-        return new User(rs.getString(1), rs.getString(2), rs.getString(3));
+        return new User(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4));
     }
     
     public Set<Integer> getUserIds(String pattern) throws SQLException {
@@ -102,11 +104,12 @@ public final class Database {
     }
     
     public void updateUser(int id, User u) throws SQLException {
-        PreparedStatement st = dbConn.prepareStatement("UPDATE \"user\" SET firstName=?, lastName=?, passwordHash=? WHERE id=?");
+        PreparedStatement st = dbConn.prepareStatement("UPDATE \"user\" SET firstName=?, lastName=?, passwordHash=?, isLogin=? WHERE id=?");
         st.setString(1, u.getFirstName());
         st.setString(2, u.getLastName());
         st.setString(3, u.getPasswordHash());
-        st.setInt(4, id);
+        st.setInt(4, u.getIsLogin());
+        st.setInt(5, id);
         st.executeUpdate();
     }
 
