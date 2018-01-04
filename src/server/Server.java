@@ -214,6 +214,8 @@ public class Server implements Runnable {
                                     login = loginCandidate;
                                     userUID = login;
                                     out.println("Welcome on the board, " + u);
+                                    u.setIsLogin(1);
+                                    db.updateUser(login, u);
                                 }
                             } catch(NumberFormatException ex) {
                                 out.println("/err Non-integer user id used");    
@@ -490,7 +492,13 @@ public class Server implements Runnable {
                         Vector<String> newRow = new Vector<String>();
                         newRow.addElement(newUser.getFirstName());
                         newRow.addElement(newUser.getLastName());
-                        newRow.addElement("SI");
+                        
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("");
+                        sb.append(newUser.getIsLogin());
+                        String strI = sb.toString();
+                        newRow.addElement(strI);
+                        
                         newVec.add(newRow);
                     }
             

@@ -15,21 +15,28 @@ public class User {
     
     private final String firstName;
     private final String lastName;
-    private final String passwordHash;
+    private final String passwordHash; 
+    public Integer isLogin; 
     
-    public User(String firstName, String lastName, String passwordHash) {
+    public User(String firstName, String lastName, String passwordHash, Integer isLogin) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.passwordHash = passwordHash;
+        this.isLogin = isLogin;
     }
     public User(String firstName, String lastName, String password, String algName) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.passwordHash = makeHash(password, algName);
+        this.isLogin = 0;
     }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
     public String getPasswordHash() { return passwordHash; }
+    public Integer getIsLogin() { return isLogin; }
+    public void setIsLogin(Integer isLogin){
+        this.isLogin = isLogin;
+    }
     
     public static String makeHash(String plain, String algName) {
         try {
