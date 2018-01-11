@@ -38,6 +38,7 @@ public class User {
         this.isLogin = isLogin;
     }
     
+    
     public static String makeHash(String plain, String algName) {
         try {
             MessageDigest alg = java.security.MessageDigest.getInstance(algName);
