@@ -123,8 +123,6 @@ public class Server implements Runnable {
         interior.add(new JLabel("Registered users", JLabel.LEFT));
         nRegisteredUsersLabel = new JLabel("", JLabel.RIGHT);
         interior.add(nRegisteredUsersLabel);
-        refreshView(true);
-        refreshTable(userUID,true);
         Dimension dim = mainWindow.getToolkit().getScreenSize();
 	Rectangle abounds = mainWindow.getBounds();
 	mainWindow.setLocation((dim.width - abounds.width) / 2, (dim.height - abounds.height) / 2);
@@ -147,7 +145,7 @@ public class Server implements Runnable {
         dm.setDataVector(newVec, columnNames);
         table = new JTable();
         table.setModel(dm);
-        
+        refreshView(true);
         JScrollPane scrollPane = new JScrollPane(table);
         frame.add(scrollPane, BorderLayout.CENTER);
         frame.setSize(300, 150);
@@ -160,6 +158,7 @@ public class Server implements Runnable {
             Socket sock = ssock.accept();
             Server server = new Server(sock);
             new Thread(server).start();
+            refreshView(true);
         }
     }
     private Socket sock;
@@ -176,29 +175,26 @@ public class Server implements Runnable {
         
         servers.add(this);
         refreshView(false);
-        refreshTable(login,true);
+        refreshTable(login);
         try {
 	out = new PrintWriter(sock.getOutputStream(), true);
 	BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         out.println("Use /help for help");
         mainLoop:
         for(;;) {
-            
+            refreshTable(login);
 
             String s = null;
-            refreshTable(login,true);
             try {
                 s = in.readLine();
             } catch(SocketException e) {
                 break;
             }
             if(s == null) break;
-            refreshTable(login,true);
             /*
                 interpretation of a command/data sent from clients
             */
             if(s.charAt(0) == '/') {
-                refreshTable(login,true);
                 StringTokenizer st = new StringTokenizer(s);
                 String cmd = st.nextToken();
                 switch(cmd) {
@@ -285,9 +281,8 @@ public class Server implements Runnable {
                     case "/addFriends":
                         if(login > 0) {
                                 int first = Integer.parseInt(st.nextToken());
-                                int secound = Integer.parseInt(st.nextToken());
                             try {
-                                 db.addFriendship(first, secound);
+                                 db.addFriendship(login, first);
                                   out.println("Correct addition to friends :)");
                             } catch (SQLException ex) {
                                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -301,10 +296,9 @@ public class Server implements Runnable {
                     case "/deleteFriendship":
                         if(login > 0) {
                                 int first = Integer.parseInt(st.nextToken());
-                                int secound = Integer.parseInt(st.nextToken());
                             try {
-                                if(db.isFriend(first, secound)){
-                                    db.deleteFriendship(first, secound);
+                                if(db.isFriend(login, first)){
+                                    db.deleteFriendship(login, first);
                                     out.println("It's over your Friendship");
                                 }else{
                                     out.println("You and this dude are not friends, and u cant delete him.");
@@ -319,15 +313,8 @@ public class Server implements Runnable {
                         }
                         break;
                     case "/allMyFriends":
-                        // // // // // // // // // // // // // // // // // // // // // // 
-                        if(login > 0) {
-                            
-                            refreshTable(login,true);
-                        }else {
-                            out.println("/err You are not logged in");
-                        }
+                            refreshTable(login);
                         break;
-                        // // // // // // // // // // // // // // // // // // // // // // 
                     case "/register":
                         try {
                             int id = db.addUser(new User(st.nextToken(), st.nextToken(), st.nextToken(), "MD5"));
@@ -353,7 +340,6 @@ public class Server implements Runnable {
                     case "/upload":
                         synchronized(sock) {
                             try {
-                                refreshTable(userUID,true);
                                 int bytesToRead = Integer.parseInt(st.nextToken());
                                 if(bytesToRead < 0 || bytesToRead > UPLOADLIMIT) throw new FileSystemException("File to upload too big");
                                 UUID uuid = UUID.randomUUID();
@@ -388,7 +374,6 @@ public class Server implements Runnable {
                             } else {
                                 String fileName = st.nextToken();
                                 try {
-                                    refreshTable(userUID,true);
                                     File file = new File("files/" + fileName);
                                     long fileSize = file.length();
                                     out.println("/downloadready " + fileSize);
@@ -428,7 +413,6 @@ public class Server implements Runnable {
                 if(login > 0) {
                     if(sendTo > 0) {
                         try {
-                            refreshTable(userUID,true);
                             Message msg = new Message(new Timestamp(System.currentTimeMillis()), null, login, sendTo, s);
                             int msgId = db.saveMessage(msg);
                             int count = 0;
@@ -461,7 +445,6 @@ public class Server implements Runnable {
             sock.close();
         } catch(Exception e) {}
         refreshView(false);
-        refreshTable(userUID,false);
     }
     
     private static void refreshView(boolean withDB) {
@@ -478,9 +461,9 @@ public class Server implements Runnable {
         }
     }
     
-    private static void refreshTable(int login,boolean withDB) {
+    private static void refreshTable(int login) {
 
-        if(withDB && db != null && login > 0) {
+        if(db != null && login > 0) {
             Set<User> friendsList = new HashSet<> ();
             try {
                 Set<Integer> friendsIdList = db.getFriendIds(login);
