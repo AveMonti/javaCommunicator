@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import javax.swing.JFrame;
 import java.net.InetAddress;
@@ -32,6 +33,9 @@ import java.nio.file.FileSystemException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -40,8 +44,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 import server.Server;
 
 /**
@@ -70,6 +76,13 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
     private PrintWriter out = null;
     private BufferedReader in = null;
 
+     // Jtable
+    
+    private static Vector<Vector> newVec = new Vector<Vector>();
+    private static Vector<String> columnNames = new Vector<String>();
+    private static JTable table;
+    private static DefaultTableModel dm = new DefaultTableModel(0, 0);
+   
     public Client(String title) {
         super(title);
         Client self = this;
@@ -101,8 +114,10 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
         Dimension dim = getToolkit().getScreenSize();
         Rectangle aBounds = getBounds();
         setLocation((dim.width - aBounds.width) / 2, (dim.height - aBounds.height) / 2);
+        
     }
 
+    
     @Override
     public void keyReleased(KeyEvent e) {
     }
@@ -271,6 +286,16 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                     StringTokenizer st = new StringTokenizer(s);
                     String cmd = st.nextToken();
                     switch(cmd) {
+                        case "/friendsList":
+
+                            ObjectInputStream inStream = null;
+                            inStream = new ObjectInputStream(sock.getInputStream());    
+                            newVec = (Vector<Vector>) inStream.readObject();
+                            System.out.print(newVec);
+                            dm.fireTableDataChanged();
+                            
+                            
+                            break;
                         case "/from":
                             String from = st.hasMoreTokens() ? st.nextToken() : null;
                             printlnToPanel("← Message sent from " + from);
@@ -338,7 +363,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                         default:
                     }
                 } else {
-                    printlnToPanel("← " + s);
+                    printlnToPanel("← " + s); // tutaj to sie dzieje ale kiedy
                 }
             } catch (HeadlessException | IOException e) {
                 if (JOptionPane.showConfirmDialog(null, e + "\n\n" + "Reconnect?", "Reconnect", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -346,6 +371,8 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                 } else {
                     System.exit(0);
                 }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -370,6 +397,21 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 
         mainWindow = new Client("Communicator client");
 
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        columnNames.addElement("Name");
+          columnNames.addElement("Surname");
+         columnNames.addElement("isLog?");
+    
+        dm.setDataVector(newVec, columnNames);
+        table = new JTable();
+        table.setModel(dm);
+        //refreshView(true);
+        JScrollPane scrollPane = new JScrollPane(table);
+        frame.add(scrollPane, BorderLayout.CENTER);
+        frame.setSize(300, 150);
+        frame.setVisible(true);
+        
         try {
             Properties props = new Properties();
             props.load(new FileInputStream("Client.properties"));

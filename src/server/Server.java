@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -67,13 +68,13 @@ public class Server implements Runnable {
     private static JLabel nRegisteredUsersLabel;
     private static Database db;
     private static int userUID = 0;
+    private ObjectOutputStream outputStream = null;
     
-    // Jtable
-    
-    private static Vector<Vector> newVec = new Vector<Vector>();
+    //jtable
+        private static Vector<Vector> newVec = new Vector<Vector>();
     private static Vector<String> columnNames = new Vector<String>();
-    private static JTable table;
-    private static DefaultTableModel dm = new DefaultTableModel(0, 0);
+    //
+
     
     public static void main(String[] args) throws IOException, SQLException {
         
@@ -131,28 +132,6 @@ public class Server implements Runnable {
 
         
         
-
-        
-        
-        
-         //
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        columnNames.addElement("Name");
-          columnNames.addElement("Surname");
-         columnNames.addElement("isLog?");
-    
-        dm.setDataVector(newVec, columnNames);
-        table = new JTable();
-        table.setModel(dm);
-        refreshView(true);
-        JScrollPane scrollPane = new JScrollPane(table);
-        frame.add(scrollPane, BorderLayout.CENTER);
-        frame.setSize(300, 150);
-        frame.setVisible(true);
-        
-        
-        
         
         for(;;) {
             Socket sock = ssock.accept();
@@ -175,14 +154,14 @@ public class Server implements Runnable {
         
         servers.add(this);
         refreshView(false);
-        refreshTable(login);
+       
         try {
 	out = new PrintWriter(sock.getOutputStream(), true);
 	BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
         out.println("Use /help for help");
         mainLoop:
         for(;;) {
-            refreshTable(login);
+            
 
             String s = null;
             try {
@@ -313,7 +292,42 @@ public class Server implements Runnable {
                         }
                         break;
                     case "/allMyFriends":
-                            refreshTable(login);
+                       
+        if(login > 0) {
+            Set<User> friendsList = new HashSet<> ();
+            try {
+                Set<Integer> friendsIdList = db.getFriendIds(login);
+                    newVec.clear();
+                    for (Integer number : friendsIdList) {
+                        //System.out.println(number);
+                        User newUser = db.getUser(number);
+                        friendsList.add(newUser);
+                        
+                        Vector<String> newRow = new Vector<String>();
+                        newRow.addElement(newUser.getFirstName());
+                        newRow.addElement(newUser.getLastName());
+                        
+                        if(newUser.getIsLogin() == 0){
+                           newRow.addElement("NO"); 
+                        }else if(newUser.getIsLogin() == 1){
+                           newRow.addElement("YES"); 
+                        }
+
+                        newVec.add(newRow);
+                    }
+
+                  out.println("/friendsList " + newVec);
+                  outputStream = new ObjectOutputStream(sock.getOutputStream());
+   
+                  outputStream.writeObject(newVec);
+    
+            } catch (SQLException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else {
+            System.out.println("You are not logged in");
+        }
+                  
                         break;
                     case "/register":
                         try {
@@ -418,7 +432,7 @@ public class Server implements Runnable {
                             int count = 0;
                             for(Server server: servers) {
                                 if(sendTo == server.login) {
-                                    synchronized(sock) {
+                                    synchronized(sock) { //chuj
                                         server.out.println("/from " + login + "\n" + s);
                                     }
                                     count++;
@@ -461,43 +475,4 @@ public class Server implements Runnable {
         }
     }
     
-    private static void refreshTable(int login) {
-
-        if(db != null && login > 0) {
-            Set<User> friendsList = new HashSet<> ();
-            try {
-                Set<Integer> friendsIdList = db.getFriendIds(login);
-                    newVec.clear();
-                    for (Integer number : friendsIdList) {
-                        //System.out.println(number);
-                        User newUser = db.getUser(number);
-                        friendsList.add(newUser);
-                        
-                        Vector<String> newRow = new Vector<String>();
-                        newRow.addElement(newUser.getFirstName());
-                        newRow.addElement(newUser.getLastName());
-                        
-                        if(newUser.getIsLogin() == 0){
-                           newRow.addElement("NO"); 
-                        }else if(newUser.getIsLogin() == 1){
-                           newRow.addElement("YES"); 
-                        }
-
-                        newVec.add(newRow);
-                    }
-            
-                System.out.println(friendsList);
-                dm.fireTableDataChanged();
-                
-                
-                
-                
-                
-            } catch (SQLException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }else {
-            System.out.println("You are not logged in");
-        } 
-    }
 }
