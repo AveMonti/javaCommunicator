@@ -363,7 +363,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                         default:
                     }
                 } else {
-                    printlnToPanel("← " + s); // tutaj to sie dzieje ale kiedy
+                    printlnToPanel("← " + s); 
                 }
             } catch (HeadlessException | IOException e) {
                 if (JOptionPane.showConfirmDialog(null, e + "\n\n" + "Reconnect?", "Reconnect", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
