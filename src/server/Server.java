@@ -262,7 +262,30 @@ public class Server implements Runnable {
                                 int first = Integer.parseInt(st.nextToken());
                             try {
                                  db.addFriendship(login, first);
-                                  out.println("Correct addition to friends :)");
+                                 // out.println("Correct addition to friends :)");
+                                  
+                                  Set<User> friendsList = new HashSet<> ();
+            
+                Set<Integer> friendsIdList = db.getFriendIds(login);
+
+                    for (Integer number : friendsIdList){
+                        User newUser = db.getUser(number);
+                        friendsList.add(newUser);
+                    }
+                    StringBuilder stringbuilder = new StringBuilder();
+                    
+                    for(User newUser : friendsList){
+                            String fff = newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
+                            stringbuilder.append(fff);
+                            stringbuilder.append("@");
+                    }
+                    String toSendValue = stringbuilder.toString();
+                    toSendValue = toSendValue.substring(0, toSendValue.length());
+                    
+                    out.println("/friendsList " + toSendValue);
+                    out.flush();
+                                  
+                                  
                             } catch (SQLException ex) {
                                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (IllegalArgumentException ex) {
@@ -297,29 +320,46 @@ public class Server implements Runnable {
             Set<User> friendsList = new HashSet<> ();
             try {
                 Set<Integer> friendsIdList = db.getFriendIds(login);
-                    newVec.clear();
-                    for (Integer number : friendsIdList) {
-                        //System.out.println(number);
+
+                    for (Integer number : friendsIdList){
                         User newUser = db.getUser(number);
                         friendsList.add(newUser);
-                        
-                        Vector<String> newRow = new Vector<String>();
-                        newRow.addElement(newUser.getFirstName());
-                        newRow.addElement(newUser.getLastName());
-                        
-                        if(newUser.getIsLogin() == 0){
-                           newRow.addElement("NO"); 
-                        }else if(newUser.getIsLogin() == 1){
-                           newRow.addElement("YES"); 
-                        }
-
-                        newVec.add(newRow);
                     }
-
-                  out.println("/friendsList " + newVec);
-                  outputStream = new ObjectOutputStream(sock.getOutputStream());
+                    StringBuilder stringbuilder = new StringBuilder();
+                    
+                    for(User newUser : friendsList){
+                            String fff = newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
+                            stringbuilder.append(fff);
+                            stringbuilder.append("@");
+                    }
+                    String toSendValue = stringbuilder.toString();
+                    toSendValue = toSendValue.substring(0, toSendValue.length());
+                    
+                    out.println("/friendsList " + toSendValue);
+                    out.flush();
+                  
+                    //xyz
+                    
+//                    StringBuilder sbuilder = new StringBuilder();
+//                    for(Vector vvv : newVec) {
+//                        for(Object aaa : vvv) {
+//                            User usss = (User)aaa;
+//                            String fff = usss.getFirstName() + ";" + usss.getLastName() + ";" + usss.getIsLogin();
+//                            sbuilder.append(fff);
+//                        }
+//                        sbuilder.append("$");
+//                    }
+//                    
+//                    String toSend = sbuilder.toString();
+//                    toSend = toSend.substring(0, toSend.length());
+//
+//                  out.println("/friendsList " + toSend);
+//                  out.flush();
+                  
+                  //outputStream = new ObjectOutputStream(sock.getOutputStream());
    
-                  outputStream.writeObject(newVec);
+                  //outputStream.writeObject(newVec);
+                  //outputStream.flush();
     
             } catch (SQLException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -329,6 +369,10 @@ public class Server implements Runnable {
         }
                   
                         break;
+                    case "/xyz":
+                        out.println("/xyz ");
+                        
+                            break;
                     case "/register":
                         try {
                             int id = db.addUser(new User(st.nextToken(), st.nextToken(), st.nextToken(), "MD5"));

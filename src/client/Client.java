@@ -31,6 +31,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.FileSystemException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -47,6 +48,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import server.Server;
 
@@ -77,14 +80,16 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
     private BufferedReader in = null;
 
      // Jtable
-    
+    private static JFrame frame = new JFrame();
     private static Vector<Vector> newVec = new Vector<Vector>();
     private static Vector<String> columnNames = new Vector<String>();
     private static JTable table;
     private static DefaultTableModel dm = new DefaultTableModel(0, 0);
    
+    
     public Client(String title) {
         super(title);
+        
         Client self = this;
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -288,13 +293,30 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                     switch(cmd) {
                         case "/friendsList":
 
-                            ObjectInputStream inStream = null;
-                            inStream = new ObjectInputStream(sock.getInputStream());    
-                            newVec = (Vector<Vector>) inStream.readObject();
-                            System.out.print(newVec);
+                            //ObjectInputStream inStream = null;
+                            //inStream = new ObjectInputStream(sock.getInputStream());    
+                            //newVec = (Vector<Vector>) inStream.readObject();
+                            
+                            newVec = new Vector<Vector>();
+                            String sss = st.nextToken();
+                            System.out.print(sss + "\n");
+                            String[] srr = sss.split("@");
+                            for(String vsv : srr) {
+                                String inter[] = vsv.split(";");
+                                Vector v2 = new Vector();
+                                
+                                v2.addAll(Arrays.asList(inter));
+                                newVec.add(v2);
+                            }
+                            
+                            dm.setDataVector(newVec, columnNames);
+                            System.out.print(newVec + "\n");
                             dm.fireTableDataChanged();
                             
-                            
+                            break;
+                        case "/xyz":
+                            System.out.print(newVec + "\n");
+                            dm.fireTableDataChanged();
                             break;
                         case "/from":
                             String from = st.hasMoreTokens() ? st.nextToken() : null;
@@ -366,14 +388,13 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                     printlnToPanel("← " + s); 
                 }
             } catch (HeadlessException | IOException e) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, e);
                 if (JOptionPane.showConfirmDialog(null, e + "\n\n" + "Reconnect?", "Reconnect", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     in = null;
                 } else {
                     System.exit(0);
                 }
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            } 
         }
     }
 
@@ -397,20 +418,23 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 
         mainWindow = new Client("Communicator client");
 
-        JFrame frame = new JFrame();
+         //
+        
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         columnNames.addElement("Name");
-          columnNames.addElement("Surname");
-         columnNames.addElement("isLog?");
+        columnNames.addElement("Surname");
+        columnNames.addElement("isLog?");
     
         dm.setDataVector(newVec, columnNames);
         table = new JTable();
         table.setModel(dm);
-        //refreshView(true);
+        
         JScrollPane scrollPane = new JScrollPane(table);
         frame.add(scrollPane, BorderLayout.CENTER);
         frame.setSize(300, 150);
         frame.setVisible(true);
+        
+        //
         
         try {
             Properties props = new Properties();
