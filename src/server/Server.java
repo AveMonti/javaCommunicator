@@ -32,7 +32,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
@@ -144,7 +146,10 @@ public class Server implements Runnable {
     private PrintWriter out;
     private int login = 0;
     private int sendTo = 0;
-
+    private static Set<User> friendsList;
+    private static Set<Integer> friendsIdList;
+    
+    
     private Server(Socket sock) throws IOException {
         this.sock = sock;
     }
@@ -191,6 +196,8 @@ public class Server implements Runnable {
                                     out.println("Welcome on the board, " + u);
                                     u.setIsLogin(1);
                                     db.updateUser(login, u);
+                                    
+                                    Server.sendUpdateToAllUsers("/updateStatus " + u.ID + " " +u.isLogin);
                                 }
                             } catch(NumberFormatException ex) {
                                 out.println("/err Non-integer user id used");    
@@ -264,9 +271,9 @@ public class Server implements Runnable {
                                  db.addFriendship(login, first);
                                  // out.println("Correct addition to friends :)");
                                   
-                                  Set<User> friendsList = new HashSet<> ();
+                    friendsList = new HashSet<> ();
             
-                Set<Integer> friendsIdList = db.getFriendIds(login);
+                      friendsIdList = db.getFriendIds(login);
 
                     for (Integer number : friendsIdList){
                         User newUser = db.getUser(number);
@@ -275,7 +282,7 @@ public class Server implements Runnable {
                     StringBuilder stringbuilder = new StringBuilder();
                     
                     for(User newUser : friendsList){
-                            String fff = newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
+                            String fff = newUser.ID + ";" + newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
                             stringbuilder.append(fff);
                             stringbuilder.append("@");
                     }
@@ -295,6 +302,53 @@ public class Server implements Runnable {
                             out.println("/err You are not logged in");
                         }
                         break;
+                        case "/xyz":  // tutuututuututuututuututuuutuutututuututututut
+                        
+                {
+                    try {
+                        Set<Integer> newFriendsIdList = db.getFriendIds(login);
+                        out.println(newFriendsIdList + " " + friendsIdList);
+                        
+
+                        
+                        Set<User> newFriendsList = new HashSet<> ();
+                    for (Integer number : newFriendsIdList){
+                        User newUser = db.getUser(number);
+                        newFriendsList.add(newUser);
+                    }
+
+                    
+                    out.println(newFriendsList + " " + friendsList);
+
+                    
+                          
+                    if(friendsList != newFriendsList){
+
+//                        StringBuilder stringbuilder = new StringBuilder();
+                    
+//                    for(User newUser : newFriendsList){
+//                            String fff = newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
+//                            stringbuilder.append(fff);
+//                            stringbuilder.append("@");
+//                    }
+//                    String toSendValue = stringbuilder.toString();
+//                    toSendValue = toSendValue.substring(0, toSendValue.length());
+//                    
+//                    out.println("/friendsList " + toSendValue);
+//                    out.flush();
+                    }else{
+                        out.println("nic sie nei zmieniło ");
+                    }
+                    
+                        
+                        
+                    } catch (SQLException ex) {
+                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                        
+                        
+                            break;
                     case "/deleteFriendship":
                         if(login > 0) {
                                 int first = Integer.parseInt(st.nextToken());
@@ -328,7 +382,7 @@ public class Server implements Runnable {
                     StringBuilder stringbuilder = new StringBuilder();
                     
                     for(User newUser : friendsList){
-                            String fff = newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
+                            String fff = newUser.ID + ";" + newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
                             stringbuilder.append(fff);
                             stringbuilder.append("@");
                     }
@@ -337,30 +391,7 @@ public class Server implements Runnable {
                     
                     out.println("/friendsList " + toSendValue);
                     out.flush();
-                  
-                    //xyz
-                    
-//                    StringBuilder sbuilder = new StringBuilder();
-//                    for(Vector vvv : newVec) {
-//                        for(Object aaa : vvv) {
-//                            User usss = (User)aaa;
-//                            String fff = usss.getFirstName() + ";" + usss.getLastName() + ";" + usss.getIsLogin();
-//                            sbuilder.append(fff);
-//                        }
-//                        sbuilder.append("$");
-//                    }
-//                    
-//                    String toSend = sbuilder.toString();
-//                    toSend = toSend.substring(0, toSend.length());
-//
-//                  out.println("/friendsList " + toSend);
-//                  out.flush();
-                  
-                  //outputStream = new ObjectOutputStream(sock.getOutputStream());
-   
-                  //outputStream.writeObject(newVec);
-                  //outputStream.flush();
-    
+                 
             } catch (SQLException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -369,13 +400,9 @@ public class Server implements Runnable {
         }
                   
                         break;
-                    case "/xyz":
-                        out.println("/xyz ");
-                        
-                            break;
                     case "/register":
                         try {
-                            int id = db.addUser(new User(st.nextToken(), st.nextToken(), st.nextToken(), "MD5"));
+                            int id = db.addUser(new User(-1, st.nextToken(), st.nextToken(), st.nextToken(), "MD5"));
                             out.println("Successfully registered as " + id);
                         } catch(NoSuchElementException ex) {
                             out.println("/err Use /register firstName lastName password");
@@ -476,7 +503,7 @@ public class Server implements Runnable {
                             int count = 0;
                             for(Server server: servers) {
                                 if(sendTo == server.login) {
-                                    synchronized(sock) { //chuj
+                                    synchronized(sock) { 
                                         server.out.println("/from " + login + "\n" + s);
                                     }
                                     count++;
@@ -503,6 +530,14 @@ public class Server implements Runnable {
             sock.close();
         } catch(Exception e) {}
         refreshView(false);
+    }
+    
+    private static void sendUpdateToAllUsers(String status) {
+        for(Server serv : servers) {
+            serv.out.println(status);
+            serv.out.flush();
+        }
+               
     }
     
     private static void refreshView(boolean withDB) {

@@ -314,9 +314,30 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                             dm.fireTableDataChanged();
                             
                             break;
-                        case "/xyz":
-                            System.out.print(newVec + "\n");
-                            dm.fireTableDataChanged();
+                        case "/updateStatus":
+                            int userId = Integer.valueOf(st.nextToken());
+                            int userStatus = Integer.valueOf(st.nextToken());
+                            Vector found = null;
+                            for(Vector list : newVec) {
+                                int usID = Integer.valueOf((String)list.get(0));
+                                if(usID == userId) {
+                                    found = list;
+                                    break;
+                                }
+                            }
+                            if(found != null) {
+                                newVec.remove(found);
+                                Vector newVector = new Vector();
+                                newVector.add(userId);
+                                newVector.add(found.get(1));
+                                newVector.add(found.get(2));
+                                newVector.add(userStatus);
+                                newVec.add(newVector);
+                                dm.fireTableDataChanged();
+                            }
+                            
+                            System.out.print(userId + " " + userStatus);
+//                            dm.fireTableDataChanged();
                             break;
                         case "/from":
                             String from = st.hasMoreTokens() ? st.nextToken() : null;
@@ -421,6 +442,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
          //
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        columnNames.addElement("ID");
         columnNames.addElement("Name");
         columnNames.addElement("Surname");
         columnNames.addElement("isLog?");
