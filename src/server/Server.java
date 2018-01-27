@@ -197,7 +197,7 @@ public class Server implements Runnable {
                                     u.setIsLogin(1);
                                     db.updateUser(login, u);
                                     
-                                    Server.sendUpdateToAllUsers("/updateStatus " + u.ID + " " +u.isLogin);
+                                    Server.sendUpdateToAllUsers("/updateStatusLogin " + u.ID + " " +u.isLogin);
                                 }
                             } catch(NumberFormatException ex) {
                                 out.println("/err Non-integer user id used");    
@@ -302,53 +302,6 @@ public class Server implements Runnable {
                             out.println("/err You are not logged in");
                         }
                         break;
-                        case "/xyz":  // tutuututuututuututuututuuutuutututuututututut
-                        
-                {
-                    try {
-                        Set<Integer> newFriendsIdList = db.getFriendIds(login);
-                        out.println(newFriendsIdList + " " + friendsIdList);
-                        
-
-                        
-                        Set<User> newFriendsList = new HashSet<> ();
-                    for (Integer number : newFriendsIdList){
-                        User newUser = db.getUser(number);
-                        newFriendsList.add(newUser);
-                    }
-
-                    
-                    out.println(newFriendsList + " " + friendsList);
-
-                    
-                          
-                    if(friendsList != newFriendsList){
-
-//                        StringBuilder stringbuilder = new StringBuilder();
-                    
-//                    for(User newUser : newFriendsList){
-//                            String fff = newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
-//                            stringbuilder.append(fff);
-//                            stringbuilder.append("@");
-//                    }
-//                    String toSendValue = stringbuilder.toString();
-//                    toSendValue = toSendValue.substring(0, toSendValue.length());
-//                    
-//                    out.println("/friendsList " + toSendValue);
-//                    out.flush();
-                    }else{
-                        out.println("nic sie nei zmieniło ");
-                    }
-                    
-                        
-                        
-                    } catch (SQLException ex) {
-                        Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                        
-                        
-                            break;
                     case "/deleteFriendship":
                         if(login > 0) {
                                 int first = Integer.parseInt(st.nextToken());
@@ -367,38 +320,6 @@ public class Server implements Runnable {
                         } else {
                             out.println("/err You are not logged in");
                         }
-                        break;
-                    case "/allMyFriends":
-                       
-        if(login > 0) {
-            Set<User> friendsList = new HashSet<> ();
-            try {
-                Set<Integer> friendsIdList = db.getFriendIds(login);
-
-                    for (Integer number : friendsIdList){
-                        User newUser = db.getUser(number);
-                        friendsList.add(newUser);
-                    }
-                    StringBuilder stringbuilder = new StringBuilder();
-                    
-                    for(User newUser : friendsList){
-                            String fff = newUser.ID + ";" + newUser.getFirstName() + ";" + newUser.getLastName() + ";" + newUser.getIsLogin();
-                            stringbuilder.append(fff);
-                            stringbuilder.append("@");
-                    }
-                    String toSendValue = stringbuilder.toString();
-                    toSendValue = toSendValue.substring(0, toSendValue.length());
-                    
-                    out.println("/friendsList " + toSendValue);
-                    out.flush();
-                 
-            } catch (SQLException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }else {
-            System.out.println("You are not logged in");
-        }
-                  
                         break;
                     case "/register":
                         try {
