@@ -13,18 +13,21 @@ import java.security.NoSuchAlgorithmException;
  */
 public class User {
     
+    public final int ID;
     private final String firstName;
     private final String lastName;
     private final String passwordHash; 
     public Integer isLogin; 
     
-    public User(String firstName, String lastName, String passwordHash, Integer isLogin) {
+    public User(int ID, String firstName, String lastName, String passwordHash, int isLogin) {
+        this.ID = ID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.passwordHash = passwordHash;
         this.isLogin = isLogin;
     }
-    public User(String firstName, String lastName, String password, String algName) {
+    public User(int ID, String firstName, String lastName, String password, String algName) {
+        this.ID = ID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.passwordHash = makeHash(password, algName);

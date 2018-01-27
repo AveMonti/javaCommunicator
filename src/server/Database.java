@@ -50,7 +50,7 @@ public final class Database {
                 "id2 INTEGER NOT NULL," +
                 "CONSTRAINT friend_primary_key PRIMARY KEY (id1, id2)" +
                 ")");            
-              addUser(new User("Admin", "Istrator", adminPassword, "MD5"));
+              addUser(new User(-1, "Admin", "Istrator", adminPassword, "MD5"));
 //            Set<Integer> ids = getUserIds("%");
 //            for(Integer id: ids) {
 //                System.out.println("#" + id + ": " + getUser(id));
@@ -84,11 +84,11 @@ public final class Database {
     
     public User getUser(int id) throws SQLException {
         if(id == 0) return null;
-        PreparedStatement st = dbConn.prepareStatement("SELECT firstName, lastName, passwordHash, isLogin FROM \"user\" WHERE id=?");
+        PreparedStatement st = dbConn.prepareStatement("SELECT id, firstName, lastName, passwordHash, isLogin FROM \"user\" WHERE id=?");
         st.setInt(1, id);
         ResultSet rs = st.executeQuery();
         rs.next();
-        return new User(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4));
+        return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5));
     }
     
     public Set<Integer> getUserIds(String pattern) throws SQLException {

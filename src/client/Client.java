@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import javax.swing.JFrame;
 import java.net.InetAddress;
@@ -48,8 +47,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import server.Server;
 
@@ -314,9 +311,27 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                             dm.fireTableDataChanged();
                             
                             break;
-                        case "/xyz":
-                            System.out.print(newVec + "\n");
-                            dm.fireTableDataChanged();
+                        case "/updateStatusLogin":
+                            int userId = Integer.valueOf(st.nextToken());
+                            int userStatus = Integer.valueOf(st.nextToken());
+                            Vector found = null;
+                            for(Vector list : newVec) {
+                                int usID = Integer.valueOf((String)list.get(0));
+                                if(usID == userId) {
+                                    found = list;
+                                    break;
+                                }
+                            }
+                            if(found != null) {
+                                newVec.remove(found);
+                                Vector newVector = new Vector();
+                                newVector.add(userId);
+                                newVector.add(found.get(1));
+                                newVector.add(found.get(2));
+                                newVector.add(userStatus);
+                                newVec.add(newVector);
+                                dm.fireTableDataChanged();
+                            }
                             break;
                         case "/from":
                             String from = st.hasMoreTokens() ? st.nextToken() : null;
@@ -347,7 +362,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
                                 int bytesToRead = st.hasMoreTokens() ? Integer.parseInt(st.nextToken()) : 0;
                                 printlnToPanel("← to download " + bytesToRead + " bytes");
                                 JFileChooser fileChooser;
-                                if(currentDirectory != null) { 
+                                if(currentDirectory != null) {  
                                     fileChooser = new JFileChooser();
                                 } else {
                                     fileChooser = new JFileChooser(currentDirectory);
@@ -421,6 +436,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
          //
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        columnNames.addElement("ID");
         columnNames.addElement("Name");
         columnNames.addElement("Surname");
         columnNames.addElement("isLog?");
